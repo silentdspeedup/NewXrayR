@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(Select-Object Name)",
-      "Bash(go build:*)"
+      "Bash(go build:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []

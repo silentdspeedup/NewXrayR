@@ -1667,8 +1667,8 @@ github.com/xeipuuv/gojsonschema v1.2.0/go.mod h1:anYRn/JVcOK2ZgGU+IjEV4nwlhoK5sQ
 github.com/xiang90/probing v0.0.0-20190116061207-43a291ad63a2/go.mod h1:UETIi67q53MR2AWcXfiuqkDkRtnGDLqkBTpCHuJHxtU=
 github.com/xtls/reality v0.0.0-20251014195629-e4eec4520535 h1:nwobseOLLRtdbP6z7Z2aVI97u8ZptTgD1ofovhAKmeU=
 github.com/xtls/reality v0.0.0-20251014195629-e4eec4520535/go.mod h1:vbHCV/3VWUvy1oKvTxxWJRPEWSeR1sYgQHIh6u/JiZQ=
-github.com/xtls/xray-core v1.251015.0 h1:P7b3vt8ShhH31k4h6VJ/Pxar3tY9eK+7S8eygd6rsP0=
-github.com/xtls/xray-core v1.251015.0/go.mod h1:72ZU/srfutsNPmw9y8SCGRy0iccvshIRk8BNGR8D2Ik=
+github.com/xtls/xray-core v1.250831.0 h1:0EWgE0eflLNqIudM/5c9SWA0Gegc3mgVsD5VNUqDHGE=
+github.com/xtls/xray-core v1.250831.0/go.mod h1:WB/73DmN9Vs7lxtx4Xc/D0Ub1VUu06hAh1mMh8JN2uM=
 github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0 h1:6fRhSjgLCkTD3JnJxvaJ4Sj+TYblw757bqYgZaOq5ZY=
 github.com/yalp/jsonpath v0.0.0-20180802001716-5cc68e5049a0/go.mod h1:/LWChgwKmvncFJFHJ7Gvn9wZArjbV5/FppcK2fKk/tI=
 github.com/yandex-cloud/go-genproto v0.0.0-20240311082839-58e1a7554a75 h1:hkFRBcSOFUNuuORzA5DqvBcoFjH7R0HCIu+mlSSw56U=
