@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(Select-Object Name)"
+      "Bash(Select-Object Name)",
+      "Bash(go build:*)"
     ],
     "deny": [],
     "ask": []

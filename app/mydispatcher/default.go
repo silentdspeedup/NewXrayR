@@ -383,6 +383,10 @@ func sniffer(ctx context.Context, cReader *cachedReader, metadataOnly bool, netw
 }
 
 func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.Link, destination net.Destination) {
+	// Note: HostsLookup interface was removed in xray-core v1.251015.0
+	// The following hosts lookup code has been commented out as this interface no longer exists
+	// This was an optional optimization for looking up domains in hosts file
+	/*
 	outbounds := session.OutboundsFromContext(ctx)
 	ob := outbounds[len(outbounds)-1]
 	if hosts, ok := d.dns.(dns.HostsLookup); ok && destination.Address.Family().IsDomain() {
@@ -397,6 +401,7 @@ func (d *DefaultDispatcher) routedDispatch(ctx context.Context, link *transport.
 			}
 		}
 	}
+	*/
 
 	var handler outbound.Handler
 
