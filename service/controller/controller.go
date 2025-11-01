@@ -573,13 +573,27 @@ func (c *Controller) userInfoMonitor() (err error) {
 		var err error // Define an empty error
 		if !c.config.DisableUploadTraffic {
 			err = c.apiClient.ReportUserTraffic(&userTraffic)
+			// Only retry once on failure to handle temporary network issues
+			// Multiple retries could cause duplicate reporting if the first request
+			// actually succeeded but returned an error due to network issues
+			if err != nil {
+				c.logger.Printf("Failed to report traffic: %s, retrying once in 2 seconds...", err)
+				time.Sleep(2 * time.Second)
+				err = c.apiClient.ReportUserTraffic(&userTraffic)
+				if err != nil {
+					c.logger.Printf("Retry failed: %s", err)
+				}
+			}
 		}
-		// If report traffic error, not clear the traffic
+		// Always reset traffic counters to prevent duplicate reporting
+		// Even if reporting failed after retry, we reset to avoid accumulating
+		// traffic which would cause much worse duplicate billing on next report
+		// In worst case, we lose one reporting period's traffic data (typically 60s)
+		// which is better than duplicate billing multiple periods of accumulated traffic
 		if err != nil {
-			c.logger.Print(err)
-		} else {
-			c.resetTraffic(&upCounterList, &downCounterList)
+			c.logger.Printf("Traffic reporting failed after retry. Resetting counters to prevent future duplicate reporting.")
 		}
+		c.resetTraffic(&upCounterList, &downCounterList)
 	}
 
 	// Report Online info
