@@ -19,6 +19,7 @@ import (
 	"github.com/XrayR-project/XrayR/app/mydispatcher"
 	"github.com/XrayR-project/XrayR/common/mylego"
 	"github.com/XrayR-project/XrayR/common/serverstatus"
+	"github.com/XrayR-project/XrayR/service/accesslog"
 )
 
 type LimitInfo struct {
@@ -45,6 +46,7 @@ type Controller struct {
 	dispatcher   *mydispatcher.DefaultDispatcher
 	startAt      time.Time
 	logger       *log.Entry
+	accessLogMgr *accesslog.Manager
 }
 
 type periodicTask struct {
@@ -53,23 +55,25 @@ type periodicTask struct {
 }
 
 // New return a Controller service with default parameters.
-func New(server *core.Instance, api api.API, config *Config, panelType string) *Controller {
+// accessLogMgr may be nil when access log reporting is disabled.
+func New(server *core.Instance, api api.API, config *Config, panelType string, accessLogMgr *accesslog.Manager) *Controller {
 	logger := log.NewEntry(log.StandardLogger()).WithFields(log.Fields{
 		"Host": api.Describe().APIHost,
 		"Type": api.Describe().NodeType,
 		"ID":   api.Describe().NodeID,
 	})
 	controller := &Controller{
-		server:     server,
-		config:     config,
-		apiClient:  api,
-		panelType:  panelType,
-		ibm:        server.GetFeature(inbound.ManagerType()).(inbound.Manager),
-		obm:        server.GetFeature(outbound.ManagerType()).(outbound.Manager),
-		stm:        server.GetFeature(stats.ManagerType()).(stats.Manager),
-		dispatcher: server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher),
-		startAt:    time.Now(),
-		logger:     logger,
+		server:       server,
+		config:       config,
+		apiClient:    api,
+		panelType:    panelType,
+		ibm:          server.GetFeature(inbound.ManagerType()).(inbound.Manager),
+		obm:          server.GetFeature(outbound.ManagerType()).(outbound.Manager),
+		stm:          server.GetFeature(stats.ManagerType()).(stats.Manager),
+		dispatcher:   server.GetFeature(routing.DispatcherType()).(*mydispatcher.DefaultDispatcher),
+		startAt:      time.Now(),
+		logger:       logger,
+		accessLogMgr: accessLogMgr,
 	}
 
 	return controller
@@ -88,6 +92,15 @@ func (c *Controller) Start() error {
 	}
 	c.nodeInfo = newNodeInfo
 	c.Tag = c.buildNodeTag()
+
+	// Register this node with the access log reporter (if enabled and supported)
+	if c.accessLogMgr != nil {
+		if reporter, ok := c.apiClient.(api.AccessLogReporter); ok {
+			c.accessLogMgr.Register(c.Tag, reporter, c.clientInfo.NodeID)
+		} else {
+			c.logger.Print("AccessLog enabled but this panel type does not support accesslog reporting; skip")
+		}
+	}
 
 	// Add new tag
 	err = c.addNewTag(newNodeInfo)

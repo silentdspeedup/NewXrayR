@@ -343,6 +343,24 @@ func (c *APIClient) ReportUserTraffic(userTraffic *[]api.UserTraffic) error {
 	return nil
 }
 
+// ReportAccessLog reports a batch of access log entries. Implements
+// api.AccessLogReporter; same endpoint base/auth as the other reporters.
+func (c *APIClient) ReportAccessLog(entries *[]api.AccessLogEntry) error {
+	postData := &PostData{Data: *entries}
+	path := "/mod_mu/users/accesslog"
+	res, err := c.client.R().
+		SetQueryParam("node_id", strconv.Itoa(c.NodeID)).
+		SetBody(postData).
+		SetResult(&Response{}).
+		ForceContentType("application/json").
+		Post(path)
+	_, err = c.parseResponse(res, path, err)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // GetNodeRule will pull the audit rule form ssPanel
 func (c *APIClient) GetNodeRule() (*[]api.DetectRule, error) {
 	ruleList := c.LocalRuleList

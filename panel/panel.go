@@ -25,16 +25,18 @@ import (
 	"github.com/XrayR-project/XrayR/app/mydispatcher"
 	_ "github.com/XrayR-project/XrayR/cmd/distro/all"
 	"github.com/XrayR-project/XrayR/service"
+	"github.com/XrayR-project/XrayR/service/accesslog"
 	"github.com/XrayR-project/XrayR/service/controller"
 )
 
 // Panel Structure
 type Panel struct {
-	access      sync.Mutex
-	panelConfig *Config
-	Server      *core.Instance
-	Service     []service.Service
-	Running     bool
+	access       sync.Mutex
+	panelConfig  *Config
+	Server       *core.Instance
+	Service      []service.Service
+	accessLogMgr *accesslog.Manager
+	Running      bool
 }
 
 func New(panelConfig *Config) *Panel {
@@ -170,6 +172,11 @@ func (p *Panel) Start() {
 	}
 	p.Server = server
 
+	// Build the process-level access log reporter (shared across all nodes)
+	if p.panelConfig.AccessLogConfig != nil && p.panelConfig.AccessLogConfig.Enable {
+		p.accessLogMgr = accesslog.New(p.panelConfig.AccessLogConfig, server, log.WithField("service", "accesslog"))
+	}
+
 	// Load Nodes config
 	for _, nodeConfig := range p.panelConfig.NodesConfig {
 		var apiClient api.API
@@ -199,7 +206,7 @@ func (p *Panel) Start() {
 				log.Panicf("Read Controller Config Failed")
 			}
 		}
-		controllerService = controller.New(server, apiClient, controllerConfig, nodeConfig.PanelType)
+		controllerService = controller.New(server, apiClient, controllerConfig, nodeConfig.PanelType, p.accessLogMgr)
 		p.Service = append(p.Service, controllerService)
 
 	}
@@ -211,6 +218,12 @@ func (p *Panel) Start() {
 			log.Panicf("Panel Start failed: %s", err)
 		}
 	}
+
+	// Install the access log handler after all nodes have registered their tags
+	if p.accessLogMgr != nil {
+		p.accessLogMgr.Start()
+	}
+
 	p.Running = true
 	return
 }
@@ -219,6 +232,10 @@ func (p *Panel) Start() {
 func (p *Panel) Close() {
 	p.access.Lock()
 	defer p.access.Unlock()
+	if p.accessLogMgr != nil {
+		p.accessLogMgr.Close()
+		p.accessLogMgr = nil
+	}
 	for _, s := range p.Service {
 		err := s.Close()
 		if err != nil {

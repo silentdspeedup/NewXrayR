@@ -2,6 +2,7 @@ package panel
 
 import (
 	"github.com/XrayR-project/XrayR/api"
+	"github.com/XrayR-project/XrayR/service/accesslog"
 	"github.com/XrayR-project/XrayR/service/controller"
 )
 
@@ -12,6 +13,7 @@ type Config struct {
 	OutboundConfigPath string            `mapstructure:"OutboundConfigPath"`
 	RouteConfigPath    string            `mapstructure:"RouteConfigPath"`
 	ConnectionConfig   *ConnectionConfig `mapstructure:"ConnectionConfig"`
+	AccessLogConfig    *accesslog.Config `mapstructure:"AccessLog"`
 	NodesConfig        []*NodesConfig    `mapstructure:"Nodes"`
 }
 

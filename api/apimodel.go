@@ -104,6 +104,27 @@ type UserTraffic struct {
 	Download int64
 }
 
+// AccessLogEntry is a single parsed access log record to report to the panel.
+// Nullable fields use pointers so they marshal to JSON null when absent.
+type AccessLogEntry struct {
+	UserID       *int    `json:"user_id"`
+	Email        *string `json:"email"`
+	Ts           int64   `json:"ts"`
+	SrcIP        string  `json:"src_ip"`
+	Action       string  `json:"action"` // accepted / rejected
+	Network      *string `json:"network"`
+	DestHost     *string `json:"dest_host"`
+	DestPort     *int    `json:"dest_port"`
+	RejectReason *string `json:"reject_reason"`
+}
+
+// AccessLogReporter is an optional interface implemented by panel API clients
+// that support access log ingestion (mod_mu / sspanel-compatible). The access
+// log Manager type-asserts each node's API client against this interface.
+type AccessLogReporter interface {
+	ReportAccessLog(entries *[]AccessLogEntry) error
+}
+
 type ClientInfo struct {
 	APIHost  string
 	NodeID   int
