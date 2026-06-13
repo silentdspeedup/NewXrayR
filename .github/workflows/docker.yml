@@ -4,6 +4,8 @@ on:
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: xrayr-project/xrayr
+  # Run JavaScript-based actions on Node.js 24 (Node 20 is deprecated on runners).
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build:
