@@ -111,6 +111,7 @@ type AccessLogEntry struct {
 	Email        *string `json:"email"`
 	Ts           int64   `json:"ts"`
 	SrcIP        string  `json:"src_ip"`
+	SrcPort      *int    `json:"src_port"`
 	Action       string  `json:"action"` // accepted / rejected
 	Network      *string `json:"network"`
 	DestHost     *string `json:"dest_host"`

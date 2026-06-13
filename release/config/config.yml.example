@@ -12,6 +12,15 @@ ConnectionConfig:
   UplinkOnly: 2 # Time limit when the connection downstream is closed, Second
   DownlinkOnly: 4 # Time limit when the connection is closed after the uplink is closed, Second
   BufferSize: 64 # The internal cache size of each connection, kB
+AccessLog: # Report xray access logs to the panel (SSpanel-compatible mod_mu only). Captured in-process; does not require writing access logs to disk.
+  Enable: false # Enable access log reporting
+  ReportInvalidUser: true # Report rejected rows with no user (probe/scan source IPs) for attack analysis
+  ProbeReportPolicy: broadcast # How to route untagged probe rows across nodes: broadcast (every node) | first (first node only) | none (drop)
+  BatchSize: 500 # Flush after this many buffered entries
+  FlushInterval: 3s # Flush at least this often
+  MaxBatch: 1000 # Max entries per POST
+  BufferMax: 50000 # Per-node in-memory buffer cap; oldest dropped when full
+  IngestChanSize: 100000 # Capacity of the hot-path capture channel; entries dropped when full to never block the proxy
 Nodes:
   - PanelType: "SSpanel" # Panel type: SSpanel, NewV2board, PMpanel, Proxypanel, V2RaySocks, GoV2Panel, BunPanel
     ApiConfig:

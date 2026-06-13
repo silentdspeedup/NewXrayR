@@ -296,10 +296,14 @@ func (h *xrayLogHandler) Handle(msg xlog.Message) {
 // buildEntry extracts a structured AccessLogEntry and the routing tag from a
 // raw AccessMessage. Returns tag == "" for untagged probe rows.
 func buildEntry(am *xlog.AccessMessage) (api.AccessLogEntry, string) {
+	srcIP, srcPort := extractSrc(am.From)
 	e := api.AccessLogEntry{
 		Ts:     time.Now().UTC().Unix(),
-		SrcIP:  extractIP(am.From),
+		SrcIP:  srcIP,
 		Action: string(am.Status),
+	}
+	if srcPort > 0 {
+		e.SrcPort = &srcPort
 	}
 	setDest(&e, am.To)
 	if am.Status == xlog.AccessRejected && e.DestHost == nil {
@@ -350,18 +354,28 @@ func setDest(e *api.AccessLogEntry, to interface{}) {
 	}
 }
 
-// extractIP returns the bare source IP (no port, no brackets) from an
-// AccessMessage From field, which may be a net.Destination, a net.Addr string,
-// or a "tcp:ip:port" string.
-func extractIP(v interface{}) string {
-	if d, ok := v.(xnet.Destination); ok && d.Address != nil {
-		return unbracket(d.Address.String())
+// extractSrc returns the bare source IP (no port, no brackets) and the source
+// port from an AccessMessage From field, which may be a net.Destination, a
+// net.Addr string, or a "tcp:ip:port" string. port is -1 when not present.
+func extractSrc(v interface{}) (ip string, port int) {
+	port = -1
+	if d, ok := v.(xnet.Destination); ok {
+		if d.Address != nil {
+			ip = unbracket(d.Address.String())
+		}
+		if d.Port != 0 {
+			port = int(d.Port.Value())
+		}
+		return ip, port
 	}
 	s := stripNetworkPrefix(serial.ToString(v))
-	if host, _, err := net.SplitHostPort(s); err == nil {
-		return host
+	if host, p, err := net.SplitHostPort(s); err == nil {
+		if n, e := strconv.Atoi(p); e == nil {
+			port = n
+		}
+		return host, port
 	}
-	return unbracket(s)
+	return unbracket(s), port
 }
 
 // stripNetworkPrefix removes a leading "tcp:"/"udp:"/"unix:"/"unknown:" prefix.

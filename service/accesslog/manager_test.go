@@ -42,6 +42,9 @@ func TestBuildEntry_AcceptedIPv4Domain(t *testing.T) {
 	if e.SrcIP != "223.91.85.118" {
 		t.Errorf("SrcIP = %q", e.SrcIP)
 	}
+	if intOr(e.SrcPort) != 50410 {
+		t.Errorf("SrcPort = %d, want 50410", intOr(e.SrcPort))
+	}
 	if e.Action != "accepted" {
 		t.Errorf("Action = %q", e.Action)
 	}
@@ -84,6 +87,9 @@ func TestBuildEntry_AcceptedIPv6UDP(t *testing.T) {
 	}
 	if strings.ContainsAny(e.SrcIP, "[]") {
 		t.Errorf("SrcIP contains brackets: %q", e.SrcIP)
+	}
+	if intOr(e.SrcPort) != 6287 {
+		t.Errorf("SrcPort = %d, want 6287", intOr(e.SrcPort))
 	}
 	if strOr(e.Network) != "udp" {
 		t.Errorf("Network = %q", strOr(e.Network))
@@ -139,6 +145,9 @@ func TestBuildEntry_RejectedNoUID_Probe(t *testing.T) {
 	}
 	if e.SrcIP != "111.32.121.209" {
 		t.Errorf("SrcIP = %q", e.SrcIP)
+	}
+	if intOr(e.SrcPort) != 6676 {
+		t.Errorf("SrcPort = %d, want 6676", intOr(e.SrcPort))
 	}
 	if e.UserID != nil || e.Email != nil {
 		t.Errorf("UserID/Email should be nil for probe row")
